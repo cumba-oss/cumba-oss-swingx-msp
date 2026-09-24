@@ -55,5 +55,16 @@ then on.
 
 Attribution is guarded by `AttributionTest`: every source file must have a row in
 `src/test/resources/attribution-manifest.tsv` (P300's own files as `NOT_DERIVED`), the licence
-text must ship in the jar byte-identical to `LICENSE`, and `src/main/resources/licenses.xml` must
-declare exactly the upstream tuple that puts SwingX in the data browser's About dialog.
+text must ship in the jar byte-identical to `LICENSE`, `LICENSE` itself is pinned by SHA-256 to
+the verbatim LGPL-2.1 text, and `src/main/resources/licenses.xml` must declare exactly the
+upstream tuple that puts SwingX in the data browser's About dialog.
+
+## Corresponding source
+
+The jar carries `META-INF/SOURCE.txt`, which points at this repository, and `git.properties`,
+which records the exact commit (`git.commit.id`) and whether the tree was clean (`git.dirty`).
+Use the commit id, not the jar's version: a product distribution rebuilds the library under the
+product's version number. A jar with `git.dirty=true` is not a release artefact.
+
+In the data browser's About dialog the library is listed under its own coordinates
+(`net.cumba:cumba-oss-swingx-msp`, LGPL-2.1-or-later), next to the upstream SwingX attribution.
