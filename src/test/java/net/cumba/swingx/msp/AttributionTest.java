@@ -82,7 +82,7 @@ class AttributionTest
      * Fails the build. Used instead of a JUnit assertion so this class is identical under JUnit 4
      * and JUnit 5; only the {@code @Test} import differs between the modules that carry it.
      */
-    private static void assertCondition(boolean aCondition, String aMessage)
+    private static void check(boolean aCondition, String aMessage)
     {
         if (!aCondition)
         {
@@ -95,9 +95,8 @@ class AttributionTest
     {
         String base = System.getProperty("projectBasedir");
         Path dir = Paths.get(base == null ? "." : base).toAbsolutePath().normalize();
-        assertCondition(Files.isDirectory(dir.resolve("src/main/java")),
-                "No src/main/java under " + dir + " -- this guard cannot run, and that is a"
-                        + " FAILURE, not a reason to skip.");
+        check(Files.isDirectory(dir.resolve("src/main/java")), "No src/main/java under " + dir
+                + " -- this guard cannot run, and that is a" + " FAILURE, not a reason to skip.");
         return dir;
     }
 
@@ -117,7 +116,7 @@ class AttributionTest
             if ("SCOPE".equals(r[0]))
             {
                 Path scoped = src.resolve(r[1]);
-                assertCondition(Files.isDirectory(scoped),
+                check(Files.isDirectory(scoped),
                         ARTEFACTS + " declares SCOPE " + r[1] + " but " + scoped
                                 + " is not a directory. The guard's scope has moved,"
                                 + " so it is no longer guarding anything.");
@@ -140,7 +139,7 @@ class AttributionTest
     private static List<String[]> rows(String aResource, int aColumns) throws IOException
     {
         Path f = moduleDir().resolve("src/test/resources").resolve(aResource);
-        assertCondition(Files.isRegularFile(f), f + " is missing. The guard's input is gone, so the"
+        check(Files.isRegularFile(f), f + " is missing. The guard's input is gone, so the"
                 + " guard is not guarding. Restore the resource; do not delete the test.");
         List<String[]> out = new ArrayList<>();
         for (String line : Files.readString(f, StandardCharsets.UTF_8).split("\n", -1))
@@ -151,13 +150,12 @@ class AttributionTest
                 continue;
             }
             String[] parts = t.split("\t", -1);
-            assertCondition(parts.length >= aColumns, "Malformed row in " + f + " (expected "
-                    + aColumns + " tab-separated columns): " + t);
+            check(parts.length >= aColumns, "Malformed row in " + f + " (expected " + aColumns
+                    + " tab-separated columns): " + t);
             out.add(parts);
         }
-        assertCondition(!out.isEmpty(),
-                f + " has no data rows. An empty manifest would make every other"
-                        + " assertion here vacuous.");
+        check(!out.isEmpty(), f + " has no data rows. An empty manifest would make every other"
+                + " assertion here vacuous.");
         return out;
     }
 
@@ -188,7 +186,7 @@ class AttributionTest
             walk.filter(p -> p.toString().endsWith(".java"))
                     .forEach(p -> onDisk.add(src.relativize(p).toString().replace('\\', '/')));
         }
-        assertCondition(onDisk.size() >= MIN_SOURCES,
+        check(onDisk.size() >= MIN_SOURCES,
                 "Only " + onDisk.size() + " source files under " + scope + ", below the floor of "
                         + MIN_SOURCES + ". Either the sources moved -- in which case this guard"
                         + " has just stopped guarding -- or the floor needs lowering on purpose.");
@@ -198,7 +196,7 @@ class AttributionTest
         {
             declared.add(r[0]);
         }
-        assertCondition(declared.equals(onDisk),
+        check(declared.equals(onDisk),
                 MANIFEST + " and " + scope + " disagree. Only on disk: " + minus(onDisk, declared)
                         + "; only in the manifest: " + minus(declared, onDisk)
                         + ". Every source file needs a row -- that is what stops a NEW file"
@@ -211,13 +209,12 @@ class AttributionTest
     {
         Path src = moduleDir().resolve("src/main/java");
         List<String[]> manifest = rows(MANIFEST, 3);
-        assertCondition(manifest.size() >= MIN_SOURCES, MANIFEST + " holds " + manifest.size()
+        check(manifest.size() >= MIN_SOURCES, MANIFEST + " holds " + manifest.size()
                 + " rows, below the floor of " + MIN_SOURCES);
         for (String[] r : manifest)
         {
             Path f = src.resolve(r[0]);
-            assertCondition(Files.isRegularFile(f),
-                    MANIFEST + " names a file that does not exist: " + f);
+            check(Files.isRegularFile(f), MANIFEST + " names a file that does not exist: " + f);
             if ("NOT_DERIVED".equals(r[1]))
             {
                 // Explicitly allow-listed as P300's own work. It still has to be LISTED, so a
@@ -226,13 +223,12 @@ class AttributionTest
                 continue;
             }
             String s = Files.readString(f, StandardCharsets.UTF_8);
-            assertCondition(s.startsWith("/*"),
+            check(s.startsWith("/*"),
                     r[0] + " has no leading block comment, so it carries no attribution notice"
                             + " at all.");
             String head = s.substring(0, s.indexOf("*/") + 2);
-            assertCondition(head.contains(r[2]),
-                    r[0] + " (" + r[1] + ") has lost its notice: the header" + " should contain \""
-                            + r[2] + "\" but reads:\n" + head);
+            check(head.contains(r[2]), r[0] + " (" + r[1] + ") has lost its notice: the header"
+                    + " should contain \"" + r[2] + "\" but reads:\n" + head);
         }
     }
 
@@ -251,14 +247,14 @@ class AttributionTest
             }
             files++;
             Path f = dir.resolve(r[1]);
-            assertCondition(Files.isRegularFile(f) && Files.size(f) > 0,
+            check(Files.isRegularFile(f) && Files.size(f) > 0,
                     "Missing or empty attribution artefact: " + f);
             Path shipped = null;
             if (r.length >= 3 && !r[2].isBlank())
             {
                 Path resources = dir.resolve("src/main/resources").normalize();
                 shipped = resources.resolve(r[2]).normalize();
-                assertCondition(shipped.startsWith(resources) && !shipped.equals(f.normalize()),
+                check(shipped.startsWith(resources) && !shipped.equals(f.normalize()),
                         ARTEFACTS + " names in-jar copy " + r[2] + " for " + r[1]
                                 + ", which is not a file under src/main/resources distinct from"
                                 + " it. A copy compared with itself proves nothing.");
@@ -271,16 +267,16 @@ class AttributionTest
             if (shipped != null)
             {
                 shippedChecks++;
-                assertCondition(Files.isRegularFile(shipped), f.getFileName()
+                check(Files.isRegularFile(shipped), f.getFileName()
                         + " does not travel inside the jar; expected a copy at " + shipped);
-                assertCondition(Files.mismatch(f, shipped) == -1, f + " and " + shipped
+                check(Files.mismatch(f, shipped) == -1, f + " and " + shipped
                         + " have drifted apart. The licence text the per-file notices point at"
                         + " must be the one that actually ships.");
             }
         }
-        assertCondition(files >= MIN_FILES, "Only " + files + " FILE rows in " + ARTEFACTS
+        check(files >= MIN_FILES, "Only " + files + " FILE rows in " + ARTEFACTS
                 + ", below the floor of " + MIN_FILES);
-        assertCondition(shippedChecks >= MIN_SHIPPED,
+        check(shippedChecks >= MIN_SHIPPED,
                 "Only " + shippedChecks + " FILE rows compared"
                         + " against an in-jar copy, below the floor of " + MIN_SHIPPED
                         + ". The licence text is no longer proven to ship.");
@@ -298,18 +294,17 @@ class AttributionTest
             {
                 continue;
             }
-            assertCondition(r.length >= 3,
-                    "SHA256 row needs a path and a digest: " + String.join("|", r));
+            check(r.length >= 3, "SHA256 row needs a path and a digest: " + String.join("|", r));
             hashes++;
             Path f = dir.resolve(r[1]);
-            assertCondition(Files.isRegularFile(f), "SHA256 row names a missing file: " + f);
+            check(Files.isRegularFile(f), "SHA256 row names a missing file: " + f);
             byte[] digest = java.security.MessageDigest.getInstance("SHA-256")
                     .digest(Files.readAllBytes(f));
             String actual = java.util.HexFormat.of().formatHex(digest);
-            assertCondition(actual.equals(r[2]), f + " has SHA-256 " + actual + ", expected " + r[2]
+            check(actual.equals(r[2]), f + " has SHA-256 " + actual + ", expected " + r[2]
                     + ". Its content changed; if that is intended, update the pin on purpose.");
         }
-        assertCondition(hashes >= MIN_HASHES, "Only " + hashes + " SHA256 rows in " + ARTEFACTS
+        check(hashes >= MIN_HASHES, "Only " + hashes + " SHA256 rows in " + ARTEFACTS
                 + ", below the floor of " + MIN_HASHES);
     }
 
@@ -321,7 +316,7 @@ class AttributionTest
         // that is complete, a set equality that holds, and a guard that checks nothing.
         long attributed = rows(MANIFEST, 3).stream().filter(r -> !"NOT_DERIVED".equals(r[1]))
                 .count();
-        assertCondition(attributed >= MIN_ATTRIBUTED,
+        check(attributed >= MIN_ATTRIBUTED,
                 "Only " + attributed + " of the manifest's rows"
                         + " carry an upstream notice, below the floor of " + MIN_ATTRIBUTED
                         + ". A manifest of nothing but NOT_DERIVED rows is a guard that has stopped"
@@ -333,14 +328,13 @@ class AttributionTest
     void licensesXmlDeclaresExactlyTheExpectedUpstreams() throws Exception
     {
         Path xml = moduleDir().resolve("src/main/resources/licenses.xml");
-        assertCondition(Files.isRegularFile(xml),
-                xml + " is missing. That file is the only channel that"
-                        + " puts this module's attribution into the application's About dialog.");
+        check(Files.isRegularFile(xml), xml + " is missing. That file is the only channel that"
+                + " puts this module's attribution into the application's About dialog.");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
         Document doc = factory.newDocumentBuilder().parse(xml.toFile());
         NodeList deps = doc.getElementsByTagName("dependency");
-        assertCondition(deps.getLength() >= MIN_TUPLES, xml + " declares only " + deps.getLength()
+        check(deps.getLength() >= MIN_TUPLES, xml + " declares only " + deps.getLength()
                 + " entries, below the floor of " + MIN_TUPLES);
 
         TreeSet<String> actual = new TreeSet<>();
@@ -348,13 +342,12 @@ class AttributionTest
         {
             Element d = (Element) deps.item(i);
             String group = text(d, "groupId");
-            assertCondition(!"net.cumba".equals(group),
+            check(!"net.cumba".equals(group),
                     xml + " declares an entry under groupId"
                             + " net.cumba. AboutPanel drops every such entry, so the row would be"
                             + " invisible while looking correct. Use the UPSTREAM coordinates.");
             Element lic = (Element) d.getElementsByTagName("license").item(0);
-            assertCondition(lic != null,
-                    xml + " entry " + group + " carries no <license> element.");
+            check(lic != null, xml + " entry " + group + " carries no <license> element.");
             actual.add(String.join("\t", group, text(d, "artifactId"), text(d, "version"),
                     text(lic, "name"), text(lic, "url")));
         }
@@ -364,14 +357,13 @@ class AttributionTest
         {
             if ("LICENSETUPLE".equals(r[0]))
             {
-                assertCondition(r.length >= 6,
-                        "LICENSETUPLE row needs 5 values: " + String.join("|", r));
+                check(r.length >= 6, "LICENSETUPLE row needs 5 values: " + String.join("|", r));
                 expected.add(String.join("\t", r[1], r[2], r[3], r[4], r[5]));
             }
         }
-        assertCondition(expected.size() >= MIN_TUPLES, "Only " + expected.size()
-                + " LICENSETUPLE rows in " + ARTEFACTS + ", below the floor of " + MIN_TUPLES);
-        assertCondition(actual.equals(expected),
+        check(expected.size() >= MIN_TUPLES, "Only " + expected.size() + " LICENSETUPLE rows in "
+                + ARTEFACTS + ", below the floor of " + MIN_TUPLES);
+        check(actual.equals(expected),
                 "licenses.xml does not match " + ARTEFACTS + ". Only in licenses.xml: "
                         + minus(actual, expected) + "; only expected: " + minus(expected, actual)
                         + ". LicenseInfo equality covers all five fields while"
