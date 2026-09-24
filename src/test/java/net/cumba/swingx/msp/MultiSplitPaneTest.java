@@ -130,9 +130,11 @@ class MultiSplitPaneTest
     {
         MultiSplitPane pane = new MultiSplitPane();
         JPanel c = new JPanel();
+        // Typed as Object so add(Component, Object) is chosen, not add(Component, int).
+        Object notAString = 1;
 
         IllegalArgumentException notString = assertThrows(IllegalArgumentException.class,
-                () -> pane.add(c, Integer.valueOf(1)));
+                () -> pane.add(c, notAString));
         assertEquals("Given constraint is not of type String.", notString.getMessage());
         IllegalArgumentException unknown = assertThrows(IllegalArgumentException.class,
                 () -> pane.add(c, "nope"));
