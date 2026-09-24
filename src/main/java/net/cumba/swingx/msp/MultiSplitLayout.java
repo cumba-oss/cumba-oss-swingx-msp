@@ -204,7 +204,10 @@ public class MultiSplitLayout implements LayoutManager
         Divider newDivider = new Divider();
         Rectangle outerBounds = oldLeaf.getBounds();
 
-        double halfWeight = oldLeaf.getWeight() / 2;
+        // The weight the leaf held among its siblings. A cross-orientation split replaces the leaf
+        // by a nested Split, which must take over THIS weight, not the halved one below.
+        double oldWeight = oldLeaf.getWeight();
+        double halfWeight = oldWeight / 2;
         if (halfWeight > 0)
         {
             // oldLeaf had a weight so we split the weight to old and new
@@ -269,23 +272,27 @@ public class MultiSplitLayout implements LayoutManager
 
             if (parent.isRowLayout() == aSplitRowLayout)
             {
-                // this is the simple one
-                if (!aNewIsTopLeft)
+                // this is the simple one: [new, div, old] or [old, div, new]
+                if (aNewIsTopLeft)
                 {
-                    idx++;
+                    childs.add(idx, newLeaf);
+                    childs.add(idx + 1, newDivider);
                 }
-                childs.add(idx++, newDivider);
-                childs.add(idx, newLeaf);
+                else
+                {
+                    childs.add(idx + 1, newDivider);
+                    childs.add(idx + 2, newLeaf);
+                }
             }
             else if (aNewIsTopLeft)
             {
-                childs.set(idx, new Split(parent, aSplitRowLayout, oldLeaf.getWeight(), newLeaf,
-                        newDivider, oldLeaf));
+                childs.set(idx, new Split(parent, aSplitRowLayout, oldWeight, newLeaf, newDivider,
+                        oldLeaf));
             }
             else
             {
-                childs.set(idx, new Split(parent, aSplitRowLayout, oldLeaf.getWeight(), oldLeaf,
-                        newDivider, newLeaf));
+                childs.set(idx, new Split(parent, aSplitRowLayout, oldWeight, oldLeaf, newDivider,
+                        newLeaf));
             }
             parent.setChildren(childs);
             return newLeaf;
@@ -295,13 +302,11 @@ public class MultiSplitLayout implements LayoutManager
             // no parent --> we are root
             if (aNewIsTopLeft)
             {
-                model = new Split(null, aSplitRowLayout, oldLeaf.getWeight(), newLeaf, newDivider,
-                        oldLeaf);
+                model = new Split(null, aSplitRowLayout, oldWeight, newLeaf, newDivider, oldLeaf);
             }
             else
             {
-                model = new Split(null, aSplitRowLayout, oldLeaf.getWeight(), oldLeaf, newDivider,
-                        newLeaf);
+                model = new Split(null, aSplitRowLayout, oldWeight, oldLeaf, newDivider, newLeaf);
             }
             return newLeaf;
         }
@@ -334,7 +339,7 @@ public class MultiSplitLayout implements LayoutManager
         int idx = childs.indexOf(oldLeaf);
         if (idx < 0)
         {
-            LOGGER.log(Level.ERROR, "Can''t find index of child in parent!");
+            LOGGER.log(Level.ERROR, "Can't find index of child in parent!");
             return false;
         }
 
@@ -368,14 +373,15 @@ public class MultiSplitLayout implements LayoutManager
             Split p2 = parent.getParent();
             if (p2 == null)
             {
-                LOGGER.log(Level.WARNING, "Not supported to remove last divider!", aLeafName);
+                LOGGER.log(Level.WARNING,
+                        "Can''t remove leaf {0}: not supported for the last divider.", aLeafName);
                 return false;
             }
             List<Node> c2 = new ArrayList<>(p2.getChildren());
             int idx2 = c2.indexOf(parent);
             if (idx2 < 0)
             {
-                LOGGER.log(Level.ERROR, "Can''t find index of child in parent!");
+                LOGGER.log(Level.ERROR, "Can't find index of child in parent!");
                 return false;
             }
 
@@ -402,7 +408,8 @@ public class MultiSplitLayout implements LayoutManager
         if (getLeafForName(aNewName) != null)
         {
             LOGGER.log(Level.DEBUG,
-                    "Can''t rename \"{0}\" to \"{1}\" because new name is already in use.");
+                    "Can''t rename \"{0}\" to \"{1}\" because new name is already in use.",
+                    aCurrentName, aNewName);
             return false;
         }
 
@@ -410,7 +417,8 @@ public class MultiSplitLayout implements LayoutManager
         if (l == null)
         {
             LOGGER.log(Level.DEBUG,
-                    "Can''t rename \"{0}\" to \"{1}\" because no leaf is available for old name.");
+                    "Can''t rename \"{0}\" to \"{1}\" because no leaf is available for old name.",
+                    aCurrentName, aNewName);
             return false;
         }
 
@@ -418,7 +426,8 @@ public class MultiSplitLayout implements LayoutManager
         if (c == null)
         {
             LOGGER.log(Level.ERROR,
-                    "Can''t rename \"{0}\" to \"{1}\" because no component is available for old name.");
+                    "Can''t rename \"{0}\" to \"{1}\" because no component is available for old name.",
+                    aCurrentName, aNewName);
             return false;
         }
 
@@ -508,7 +517,7 @@ public class MultiSplitLayout implements LayoutManager
         {
             throw new IllegalArgumentException("invalid model");
         }
-        Node oldModel = aModel;
+        Node oldModel = model;
         model = aModel;
         firePCS("model", oldModel, aModel);
     }
@@ -1091,7 +1100,7 @@ public class MultiSplitLayout implements LayoutManager
         else
         {
             double y = bounds.getY();
-            double extraHeight = bounds.getMaxY() - splitBounds.getHeight();
+            double extraHeight = bounds.getHeight() - splitBounds.getHeight();
             double availableHeight = extraHeight;
 
             while (splitChildren.hasNext())
