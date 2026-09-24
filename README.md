@@ -43,7 +43,17 @@ mvn clean verify
 
 Java 25.
 
-## Status
+## Origin and modifications
 
-Scaffold only. The sources move here from `cumba-databrowser` under the databrowser-meta plan
-`PLAN-swingx-msp-extraction`.
+`MultiSplitLayout.java` and `MultiSplitPane.java` (package `net.cumba.swingx.msp`) keep their
+intact Sun / SwingLabs headers. They are **modified files** in the sense of LGPL-2.1 §2(a), and
+each carries a notice saying so directly under the upstream header. The modifications began before
+the first recorded commit (2026-04-24, in the retired `net.cumba.dataviewer` repository): that
+import already had a new package and Lombok accessors. They continued there and in the data
+browser's `ui/msp/`, and then here on 2026-09-24. This repository's git history is the record from
+then on.
+
+Attribution is guarded by `AttributionTest`: every source file must have a row in
+`src/test/resources/attribution-manifest.tsv` (P300's own files as `NOT_DERIVED`), the licence
+text must ship in the jar byte-identical to `LICENSE`, and `src/main/resources/licenses.xml` must
+declare exactly the upstream tuple that puts SwingX in the data browser's About dialog.

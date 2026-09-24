@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Third-party attribution for the About dialog.
+
+    net.cumba.dataviewer.licenses.LicenseReader aggregates EVERY licenses.xml on the
+    classpath, so attribution is additive per module: this file contributes its rows to
+    the dialog without any change to the application.
+
+    Two rules this file must keep:
+
+      * The coordinates are the UPSTREAM project's, never net.cumba. AboutPanel skips
+        every entry whose groupId is exactly "net.cumba", so an attribution row filed
+        under our own coordinates is invisible while looking correct.
+
+      * LicenseInfo is a value object over groupId/artifactId/version/name/url held in a
+        HashSet, and the dialog renders only groupId/artifactId/name. Two modules
+        declaring the same upstream with a different <version> therefore render as two
+        rows that look identical. Keep each tuple BYTE-IDENTICAL across modules; where
+        no upstream revision is recorded we pin the literal "unknown" rather than
+        inventing one.
+
+    AttributionTest in this module asserts both rules.
+
+    The artifactId here deliberately says "vendored source": org.swinglabs.swingx:swingx-all
+    is ALSO a real dependency of the data browser and appears in its generated report under its
+    own coordinates. This row is about the two SwingX source files maintained in THIS jar
+    (formerly vendored into the data browser's ui/msp/), which is a different fact, and the
+    distinct artifactId keeps the two rows from reading as a duplicate pair.
+
+    ⚠ The tuple is byte-identical to the one the data browser shipped before the move, on purpose:
+    check_release_licenses.py (B2, in databrowser-meta) expects exactly it, and LicenseInfo
+    equality covers all five fields while the dialog renders only three.
+-->
+<licenseSummary>
+  <dependencies>
+    <dependency>
+      <groupId>org.swinglabs.swingx</groupId>
+      <artifactId>swingx (vendored source: MultiSplitLayout, MultiSplitPane)</artifactId>
+      <version>unknown</version>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License, version 2.1 or later</name>
+          <url>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+        </license>
+      </licenses>
+    </dependency>
+  </dependencies>
+</licenseSummary>

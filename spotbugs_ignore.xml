@@ -4,12 +4,86 @@
     <!-- ================================================================ -->
     <!-- Module-local SpotBugs suppressions for cumba-oss-swingx-msp.     -->
     <!-- One <Match> per unique (class, method-or-field, bug pattern)     -->
-    <!-- tuple, each with its justification.                             -->
+    <!-- tuple, each with its justification.                              -->
     <!--                                                                  -->
-    <!-- Empty until the two SwingX files arrive (databrowser-meta        -->
-    <!-- plans/PLAN-swingx-msp-extraction.md phase 1): their six entries  -->
-    <!-- move here from cumba-databrowser's spotbugs_ignore.xml, re-      -->
-    <!-- pointed to the new package, justifications kept.                 -->
+    <!-- The six targeted entries below moved here from cumba-databrowser -->
+    <!-- spotbugs_ignore.xml (lines 662/668/674, 1041/1047, 1832 at       -->
+    <!-- fe96f27) together with the two SwingX files, re-pointed from     -->
+    <!-- net.cumba.dataviewer.ui.msp to net.cumba.swingx.msp.             -->
     <!-- ================================================================ -->
+
+    <!-- ============ EI_EXPOSE_REP / EI_EXPOSE_REP2 ============ -->
+    <!-- Shared by reference on purpose. The layout model is a live tree
+         that the pane, the layout and the caller all observe and mutate:
+         setModel() / getModel() hand over THE model, dividers are dragged
+         in place, and the exception carries the offending node so the
+         caller can inspect it. A defensive copy would break the contract
+         (the pane would lay out a copy the caller no longer edits). -->
+
+    <Match>
+        <Class name="net.cumba.swingx.msp.MultiSplitLayout$InvalidLayoutException" />
+        <Field name="node" />
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+
+    <Match>
+        <Class name="net.cumba.swingx.msp.MultiSplitPane" />
+        <Field name="dragDivider" />
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+
+    <Match>
+        <!-- Swing's JComponent.accessibleContext lazy-init pattern. -->
+        <Class name="net.cumba.swingx.msp.MultiSplitPane" />
+        <Field name="accessibleContext" />
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+
+    <Match>
+        <Class name="net.cumba.swingx.msp.MultiSplitLayout" />
+        <Field name="model" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+
+    <Match>
+        <Class name="net.cumba.swingx.msp.MultiSplitLayout$InvalidLayoutException" />
+        <Field name="node" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+
+    <!-- ============ UPM_UNCALLED_PRIVATE_METHOD ============ -->
+    <!-- Reserved helper kept from upstream; carries
+         @SuppressWarnings("unused"). -->
+
+    <Match>
+        <Class name="net.cumba.swingx.msp.MultiSplitLayout" />
+        <Method name="minimumComponentSize" />
+        <Bug pattern="UPM_UNCALLED_PRIVATE_METHOD" />
+    </Match>
+
+    <!-- ============ CT_CONSTRUCTOR_THROW ============ -->
+    <!-- Upstream API shape: the public constructors validate their
+         arguments (Lombok @NonNull -> NullPointerException; an invalid
+         weight or model -> IllegalArgumentException) and fail fast
+         before `this` escapes. The classes are deliberately non-final
+         public extension points (the data browser subclasses the pane;
+         Split and Leaf are the model API), so the finalizer-attack
+         remedy (making them final) would change the published API.
+         Scoped per class, not as a blanket category. -->
+
+    <Match>
+        <Class name="net.cumba.swingx.msp.MultiSplitLayout" />
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
+
+    <Match>
+        <Class name="net.cumba.swingx.msp.MultiSplitLayout$Leaf" />
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
+
+    <Match>
+        <Class name="net.cumba.swingx.msp.MultiSplitLayout$Split" />
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
 
 </FindBugsFilter>

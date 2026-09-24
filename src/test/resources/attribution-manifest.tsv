@@ -1,0 +1,9 @@
+# Third-party attribution manifest -- read by AttributionTest.
+# path (under src/main/java) <TAB> kind <TAB> marker that must appear in the file's leading
+# block comment.  kind: DERIVED | PORTED | PARTIAL | ORIGINAL | NOT_DERIVED.
+#
+# NOT_DERIVED is the explicit allow-list: P300's own code, no upstream notice required. It must
+# still be LISTED -- adding a source file with no row here FAILS the build, which is what stops
+# a new derived file slipping in unattributed.
+net/cumba/swingx/msp/MultiSplitLayout.java	DERIVED	Copyright 2004 Sun Microsystems
+net/cumba/swingx/msp/MultiSplitPane.java	DERIVED	Copyright 2004 Sun Microsystems
