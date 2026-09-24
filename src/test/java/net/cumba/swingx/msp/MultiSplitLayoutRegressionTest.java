@@ -198,7 +198,12 @@ class MultiSplitLayoutRegressionTest
     }
 
 
-    /** Split then remove is a round trip: the leaf gets back exactly the weight it had. */
+    /**
+     * A CROSS-orientation split then remove is a round trip: the leaf gets back exactly the weight
+     * it had, because the collapse hands the nested Split's weight back. (A same-orientation split
+     * then remove is not: removeLeaf gives the removed half to the weighted neighbours, which is
+     * addWeight's documented behaviour and older than these fixes.)
+     */
     @Test
     void crossOrientationSplitThenRemoveRestoresTheLeafsWeight()
     {
@@ -241,6 +246,28 @@ class MultiSplitLayoutRegressionTest
         assertEquals(new Rectangle(105, 0, 100, 105), cn.getBounds());
         layout.layoutContainer(host);
         assertEquals(new Rectangle(105, 0, 100, 105), cn.getBounds(), "and it is stable");
+    }
+
+
+    /**
+     * The two leaves inside a new Split are peers even when the leaf had NO weight in its parent:
+     * with 0 / 0 the whole of any growth went to the last one.
+     */
+    @Test
+    void anUnweightedLeafSplitAcrossShares50to50InsideItsNewSplit()
+    {
+        Split root = new Split(null, true, 0.0, new Leaf("a", 0.0), new Divider(),
+                new Leaf("b", 1.0));
+        root.setBounds(new Rectangle(0, 0, 205, 100));
+        MultiSplitLayout layout = new MultiSplitLayout(root);
+        Leaf a = layout.getLeafForName("a");
+
+        Leaf n = layout.splitLeaf("a", "n", false, false);
+
+        Split nested = assertInstanceOf(Split.class, root.getChildren().get(0));
+        assertEquals(0.0, nested.getWeight(), 0.0, "a's parent-level weight is still 0");
+        assertEquals(0.5, a.getWeight(), 0.0);
+        assertEquals(0.5, n.getWeight(), 0.0);
     }
 
 

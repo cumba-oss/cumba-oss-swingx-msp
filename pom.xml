@@ -1693,6 +1693,9 @@
                         <failOnNoGitDirectory>false</failOnNoGitDirectory>
                         <includeOnlyProperties>
                             <includeOnlyProperty>git.commit.id</includeOnlyProperty>
+                            <!-- git.dirty: META-INF/SOURCE.txt names git.commit.id as the jar's
+                                 source revision, which is only true for a clean tree. -->
+                            <includeOnlyProperty>git.dirty</includeOnlyProperty>
                             <includeOnlyProperty>git.commit.id.abbrev</includeOnlyProperty>
                             <includeOnlyProperty>git.branch</includeOnlyProperty>
                             <includeOnlyProperty>git.commit.time</includeOnlyProperty>

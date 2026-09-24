@@ -11,9 +11,10 @@ Complete corresponding source code:
     https://github.com/cumba-oss/cumba-oss-swingx-msp
 
 The exact source revision this jar was built from is the git.commit.id recorded in
-git.properties at the root of this jar. Use the commit id rather than the jar's version: a
-product distribution may rebuild the library under the product's version number, which is not
-a tag in the library repository.
+git.properties at the root of this jar -- provided git.dirty there is false. A jar with
+git.dirty=true was built from uncommitted changes and is not a release artefact. Use the commit
+id rather than the jar's version: a product distribution may rebuild the library under the
+product's version number, which is not a tag in the library repository.
 
 You may replace this jar with a modified version of the library built from that source; the
 application that uses it loads it from its lib/ directory.

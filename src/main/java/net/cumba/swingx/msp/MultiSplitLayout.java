@@ -307,18 +307,16 @@ public class MultiSplitLayout implements LayoutManager
     /**
      * The Split that replaces a leaf split across its parent's orientation (or the root leaf). It
      * takes over the leaf's weight and bounds -- bounds matter: a Split left at (0,0,0,0) makes the
-     * next layout size its last child from a zero extent -- and the two leaves inside share it 50 /
-     * 50 when the leaf had a weight at all.
+     * next layout size its last child from a zero extent -- and the two leaves inside share its
+     * extra space 50 / 50. Always, even when the leaf itself had weight 0 in its parent: weights
+     * are relative to their own Split, and inside the new one the two halves are peers.
      */
     private static Split wrappingSplit(@Nullable Split aParent, boolean aRowLayout, double aWeight,
             Leaf aOldLeaf, Divider aDivider, Leaf aNewLeaf, boolean aNewIsTopLeft,
             Rectangle aBounds)
     {
-        if (aWeight > 0)
-        {
-            aOldLeaf.setWeight(0.5);
-            aNewLeaf.setWeight(0.5);
-        }
+        aOldLeaf.setWeight(0.5);
+        aNewLeaf.setWeight(0.5);
         Split split = aNewIsTopLeft
                 ? new Split(aParent, aRowLayout, aWeight, aNewLeaf, aDivider, aOldLeaf)
                 : new Split(aParent, aRowLayout, aWeight, aOldLeaf, aDivider, aNewLeaf);
