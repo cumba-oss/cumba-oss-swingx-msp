@@ -571,13 +571,32 @@ class MultiSplitLayoutTest
     }
 
 
+    /**
+     * Splitting the unweighted ROOT leaf creates a new Split, and inside it the two halves are
+     * peers: 0.5 / 0.5. (This test pinned 0 / 0 until review round 2 of PLAN-swingx-msp-extraction,
+     * where all growth then went to the second half.)
+     */
     @Test
-    void splittingAnUnweightedLeafKeepsBothUnweighted()
+    void splittingTheUnweightedRootLeafMakesTwoEqualPeers()
     {
         MultiSplitLayout layout = new MultiSplitLayout(new Leaf("a"));
         Leaf b = layout.splitLeaf("a", "b", true, false);
+        assertEquals(0.5, layout.getLeafForName("a").getWeight());
+        assertEquals(0.5, b.getWeight());
+    }
+
+
+    /** A same-orientation split halves the leaf's weight between siblings: 0 stays 0 / 0. */
+    @Test
+    void splittingAnUnweightedLeafInItsOwnOrientationKeepsBothUnweighted()
+    {
+        Split root = new Split(null, true, 0.0, new Leaf("a", 0.0), new Divider(),
+                new Leaf("c", 1.0));
+        MultiSplitLayout layout = new MultiSplitLayout(root);
+        Leaf b = layout.splitLeaf("a", "b", true, false);
         assertEquals(0.0, layout.getLeafForName("a").getWeight());
         assertEquals(0.0, b.getWeight());
+        assertEquals(1.0, layout.getLeafForName("c").getWeight());
     }
 
 
