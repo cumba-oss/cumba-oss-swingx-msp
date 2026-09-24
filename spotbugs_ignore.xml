@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+
+    <!-- ================================================================ -->
+    <!-- Module-local SpotBugs suppressions for cumba-oss-swingx-msp.     -->
+    <!-- One <Match> per unique (class, method-or-field, bug pattern)     -->
+    <!-- tuple, each with its justification.                             -->
+    <!--                                                                  -->
+    <!-- Empty until the two SwingX files arrive (databrowser-meta        -->
+    <!-- plans/PLAN-swingx-msp-extraction.md phase 1): their six entries  -->
+    <!-- move here from cumba-databrowser's spotbugs_ignore.xml, re-      -->
+    <!-- pointed to the new package, justifications kept.                 -->
+    <!-- ================================================================ -->
+
+</FindBugsFilter>
