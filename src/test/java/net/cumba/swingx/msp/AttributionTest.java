@@ -61,6 +61,16 @@ class AttributionTest
     /** Floor on module-level attribution files (README, LICENSE-*.txt). */
     private static final int MIN_FILES = 2;
 
+    /**
+     * Floor on FILE rows whose in-jar copy is actually compared. Without it, dropping the third
+     * column from the LICENSE row would skip the comparison silently (LICENSE does not start with
+     * {@code LICENSE-}) while every other assertion still passed.
+     */
+    private static final int MIN_SHIPPED = 1;
+
+    /** Floor on SHA256 rows, for the same reason. */
+    private static final int MIN_HASHES = 1;
+
     /** Floor on manifest rows that actually carry an upstream notice (kind != NOT_DERIVED). */
     private static final int MIN_ATTRIBUTED = 2;
 
@@ -228,6 +238,7 @@ class AttributionTest
     {
         Path dir = moduleDir();
         int files = 0;
+        int shippedChecks = 0;
         for (String[] r : rows(ARTEFACTS, 2))
         {
             if (!"FILE".equals(r[0]))
@@ -241,7 +252,12 @@ class AttributionTest
             Path shipped = null;
             if (r.length >= 3 && !r[2].isBlank())
             {
-                shipped = dir.resolve("src/main/resources").resolve(r[2]);
+                Path resources = dir.resolve("src/main/resources").normalize();
+                shipped = resources.resolve(r[2]).normalize();
+                require(shipped.startsWith(resources) && !shipped.equals(f.normalize()),
+                        ARTEFACTS + " names in-jar copy " + r[2] + " for " + r[1]
+                                + ", which is not a file under src/main/resources distinct from"
+                                + " it. A copy compared with itself proves nothing.");
             }
             else if (f.getFileName().toString().startsWith("LICENSE-"))
             {
@@ -250,6 +266,7 @@ class AttributionTest
             }
             if (shipped != null)
             {
+                shippedChecks++;
                 require(Files.isRegularFile(shipped), f.getFileName()
                         + " does not travel inside the jar; expected a copy at " + shipped);
                 require(Files.mismatch(f, shipped) == -1, f + " and " + shipped
@@ -259,6 +276,36 @@ class AttributionTest
         }
         require(files >= MIN_FILES, "Only " + files + " FILE rows in " + ARTEFACTS
                 + ", below the floor of " + MIN_FILES);
+        require(shippedChecks >= MIN_SHIPPED,
+                "Only " + shippedChecks + " FILE rows compared"
+                        + " against an in-jar copy, below the floor of " + MIN_SHIPPED
+                        + ". The licence text is no longer proven to ship.");
+    }
+
+
+    @Test
+    void pinnedFilesStillHaveTheirContent() throws Exception
+    {
+        Path dir = moduleDir();
+        int hashes = 0;
+        for (String[] r : rows(ARTEFACTS, 2))
+        {
+            if (!"SHA256".equals(r[0]))
+            {
+                continue;
+            }
+            require(r.length >= 3, "SHA256 row needs a path and a digest: " + String.join("|", r));
+            hashes++;
+            Path f = dir.resolve(r[1]);
+            require(Files.isRegularFile(f), "SHA256 row names a missing file: " + f);
+            byte[] digest = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(Files.readAllBytes(f));
+            String actual = java.util.HexFormat.of().formatHex(digest);
+            require(actual.equals(r[2]), f + " has SHA-256 " + actual + ", expected " + r[2]
+                    + ". Its content changed; if that is intended, update the pin on purpose.");
+        }
+        require(hashes >= MIN_HASHES, "Only " + hashes + " SHA256 rows in " + ARTEFACTS
+                + ", below the floor of " + MIN_HASHES);
     }
 
 

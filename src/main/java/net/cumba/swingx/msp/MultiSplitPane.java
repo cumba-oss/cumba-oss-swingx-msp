@@ -17,12 +17,13 @@
  * 02110-1301 USA
  *
  * MODIFIED FILE (GNU LGPL 2.1, section 2(a)). This file has been changed by P300
- * (https://www.p-300.com) from the SwingLabs SwingX original. The changes predate its first
- * recorded commit (2026-04-24, in the net.cumba.dataviewer repository), which already carried a new
- * package and Lombok accessors, and continue from there: JSpecify nullness annotations,
- * serialization fixes, static-analysis clean-ups, and the move to package net.cumba.swingx.msp on
- * 2026-09-24. See this repository's git history for each change and its date. The modified file is
- * distributed under the same licence as the original.
+ * (https://www.p-300.com) from the SwingLabs SwingX original. When: (1) before 2026-04-24 -- not
+ * dated; the first recorded version already carried a new package and Lombok accessors; (2) from
+ * 2026-04-24 to 2026-09-24 in P300's non-public repositories -- JSpecify nullness annotations,
+ * serialization fixes and static-analysis clean-ups; (3) from 2026-09-24 in this repository, whose
+ * git history records each change and its date -- the move to package net.cumba.swingx.msp and
+ * fixes to the layout algorithm. The modified file is distributed under the same licence as the
+ * original.
  */
 
 package net.cumba.swingx.msp;

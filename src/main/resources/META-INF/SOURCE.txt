@@ -1,0 +1,19 @@
+cumba-oss-swingx-msp -- corresponding source
+
+This jar is a library under the GNU Lesser General Public License, version 2.1 or (at your
+option) any later version. See META-INF/LICENSE-LGPL-2.1.txt.
+
+It contains MultiSplitLayout and MultiSplitPane (package net.cumba.swingx.msp), derived from
+SwingLabs SwingX (Copyright 2004 Sun Microsystems, Inc.) and modified by P300
+(https://www.p-300.com).
+
+Complete corresponding source code:
+    https://github.com/cumba-oss/cumba-oss-swingx-msp
+
+The exact source revision this jar was built from is the git.commit.id recorded in
+git.properties at the root of this jar. Use the commit id rather than the jar's version: a
+product distribution may rebuild the library under the product's version number, which is not
+a tag in the library repository.
+
+You may replace this jar with a modified version of the library built from that source; the
+application that uses it loads it from its lib/ directory.

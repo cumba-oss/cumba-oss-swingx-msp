@@ -3,6 +3,7 @@
 #                     Omitted = the whole module. The directory must exist.
 # FILE          <TAB> path relative to the module directory [<TAB> in-jar copy]
 # LICENSETUPLE  <TAB> groupId <TAB> artifactId <TAB> version <TAB> name <TAB> url
+# SHA256        <TAB> path relative to the module directory <TAB> lower-case hex digest
 #
 # A LICENSE-*.txt FILE row additionally requires a byte-identical copy at
 # src/main/resources/META-INF/<same name>, so the text the notices point at is the one that
@@ -15,4 +16,8 @@
 # row -- NOT_DERIVED for P300's own, which is still a classification somebody had to make.
 FILE	README.md
 FILE	LICENSE	META-INF/LICENSE-LGPL-2.1.txt
+FILE	src/main/resources/META-INF/SOURCE.txt
+# The verbatim LGPL-2.1 text (owner, 2026-09-24): the byte-identity rule above only proves the
+# jar copy equals LICENSE, not that LICENSE is still the LGPL-2.1.
+SHA256	LICENSE	20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95
 LICENSETUPLE	org.swinglabs.swingx	swingx (vendored source: MultiSplitLayout, MultiSplitPane)	unknown	GNU Lesser General Public License, version 2.1 or later	https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html

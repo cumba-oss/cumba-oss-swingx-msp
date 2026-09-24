@@ -17,12 +17,13 @@
  * 02110-1301 USA
  *
  * MODIFIED FILE (GNU LGPL 2.1, section 2(a)). This file has been changed by P300
- * (https://www.p-300.com) from the SwingLabs SwingX original. The changes predate its first
- * recorded commit (2026-04-24, in the net.cumba.dataviewer repository), which already carried a new
- * package and Lombok accessors, and continue from there: JSpecify nullness annotations,
- * serialization fixes, static-analysis clean-ups, and the move to package net.cumba.swingx.msp on
- * 2026-09-24. See this repository's git history for each change and its date. The modified file is
- * distributed under the same licence as the original.
+ * (https://www.p-300.com) from the SwingLabs SwingX original. When: (1) before 2026-04-24 -- not
+ * dated; the first recorded version already carried a new package and Lombok accessors; (2) from
+ * 2026-04-24 to 2026-09-24 in P300's non-public repositories -- JSpecify nullness annotations,
+ * serialization fixes and static-analysis clean-ups; (3) from 2026-09-24 in this repository, whose
+ * git history records each change and its date -- the move to package net.cumba.swingx.msp and
+ * fixes to the layout algorithm. The modified file is distributed under the same licence as the
+ * original.
  */
 
 package net.cumba.swingx.msp;
@@ -204,16 +205,11 @@ public class MultiSplitLayout implements LayoutManager
         Divider newDivider = new Divider();
         Rectangle outerBounds = oldLeaf.getBounds();
 
-        // The weight the leaf held among its siblings. A cross-orientation split replaces the leaf
-        // by a nested Split, which must take over THIS weight, not the halved one below.
+        // The weight the leaf held among its siblings. How it is shared depends on the case below:
+        // a same-orientation split halves it between the two new siblings; a new Split (cross
+        // orientation, or a split of the root leaf) takes it over whole, and the two leaves inside
+        // that Split share it 50 / 50 -- weights are relative to the leaf's OWN Split.
         double oldWeight = oldLeaf.getWeight();
-        double halfWeight = oldWeight / 2;
-        if (halfWeight > 0)
-        {
-            // oldLeaf had a weight so we split the weight to old and new
-            oldLeaf.setWeight(halfWeight);
-            newLeaf.setWeight(halfWeight);
-        }
 
         int divSize = getDividerSize();
         if (aSplitRowLayout)
@@ -273,6 +269,11 @@ public class MultiSplitLayout implements LayoutManager
             if (parent.isRowLayout() == aSplitRowLayout)
             {
                 // this is the simple one: [new, div, old] or [old, div, new]
+                if (oldWeight > 0)
+                {
+                    oldLeaf.setWeight(oldWeight / 2);
+                    newLeaf.setWeight(oldWeight / 2);
+                }
                 if (aNewIsTopLeft)
                 {
                     childs.add(idx, newLeaf);
@@ -284,33 +285,45 @@ public class MultiSplitLayout implements LayoutManager
                     childs.add(idx + 2, newLeaf);
                 }
             }
-            else if (aNewIsTopLeft)
-            {
-                childs.set(idx, new Split(parent, aSplitRowLayout, oldWeight, newLeaf, newDivider,
-                        oldLeaf));
-            }
             else
             {
-                childs.set(idx, new Split(parent, aSplitRowLayout, oldWeight, oldLeaf, newDivider,
-                        newLeaf));
+                childs.set(idx, wrappingSplit(parent, aSplitRowLayout, oldWeight, oldLeaf,
+                        newDivider, newLeaf, aNewIsTopLeft, outerBounds));
             }
             parent.setChildren(childs);
             return newLeaf;
         }
         else if (oldLeaf == model)
         {
-            // no parent --> we are root
-            if (aNewIsTopLeft)
-            {
-                model = new Split(null, aSplitRowLayout, oldWeight, newLeaf, newDivider, oldLeaf);
-            }
-            else
-            {
-                model = new Split(null, aSplitRowLayout, oldWeight, oldLeaf, newDivider, newLeaf);
-            }
+            // no parent --> we are root. Through setModel, so the "model" event fires.
+            setModel(wrappingSplit(null, aSplitRowLayout, oldWeight, oldLeaf, newDivider, newLeaf,
+                    aNewIsTopLeft, outerBounds));
             return newLeaf;
         }
         return null;
+    }
+
+
+    /**
+     * The Split that replaces a leaf split across its parent's orientation (or the root leaf). It
+     * takes over the leaf's weight and bounds -- bounds matter: a Split left at (0,0,0,0) makes the
+     * next layout size its last child from a zero extent -- and the two leaves inside share it 50 /
+     * 50 when the leaf had a weight at all.
+     */
+    private static Split wrappingSplit(@Nullable Split aParent, boolean aRowLayout, double aWeight,
+            Leaf aOldLeaf, Divider aDivider, Leaf aNewLeaf, boolean aNewIsTopLeft,
+            Rectangle aBounds)
+    {
+        if (aWeight > 0)
+        {
+            aOldLeaf.setWeight(0.5);
+            aNewLeaf.setWeight(0.5);
+        }
+        Split split = aNewIsTopLeft
+                ? new Split(aParent, aRowLayout, aWeight, aNewLeaf, aDivider, aOldLeaf)
+                : new Split(aParent, aRowLayout, aWeight, aOldLeaf, aDivider, aNewLeaf);
+        split.setBounds(aBounds);
+        return split;
     }
 
 

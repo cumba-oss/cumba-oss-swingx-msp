@@ -287,9 +287,10 @@
         <!--
             GLOBAL "build the bundle but do not upload" switch for
             central-publishing-maven-plugin, used by the workflow_dispatch dry
-            run. It is NOT a per-module exclusion - keeping the coverage
-            aggregator off Central is done with excludeArtifacts in the
-            deploy-central profile. See the comment there.
+            run. This library publishes its one artifact; if a module ever has
+            to be kept off Central, do it with excludeArtifacts in the plugin
+            configuration, never with this property (a -D on the release
+            command line overrides it in every module).
         -->
         <central.skipPublishing>false</central.skipPublishing>
 
@@ -1145,30 +1146,6 @@
             <id>deploy-central</id>
             <build>
                 <plugins>
-                    <!--
-                        Keep the test-jar OUT of the Central bundle.
-
-                        cumba-oss-corej-core attaches a test-jar so downstream modules can
-                        reuse its test helpers. That is useful inside the build, but nothing
-                        public consumes it today, and a Central artifact is immutable - so it
-                        is not published until something actually needs it.
-
-                        ⚠ excludeArtifacts (below) cannot express this: it matches on
-                        artifactId, so excluding cumba-oss-corej-core would drop the whole
-                        module. Overriding the execution's phase to `none` is what keeps the
-                        main jar published and the tests jar unattached. Normal builds are
-                        unaffected - the test-jar is still produced and installed locally.
-                    -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>test-jar</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
