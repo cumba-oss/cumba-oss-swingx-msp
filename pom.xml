@@ -1870,7 +1870,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${plugin.maven-javadoc-plugin.version}</version>
                 <configuration>
                     <failOnError>true</failOnError>
                     <doclint>all,-missing</doclint>
