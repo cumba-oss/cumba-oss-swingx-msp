@@ -86,4 +86,34 @@
         <Bug pattern="CT_CONSTRUCTOR_THROW" />
     </Match>
 
+    <!-- MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR: the internalised upstream
+         layout code calls its own (and inherited) overridable setters from the
+         constructors. The classes are deliberately non-final public extension
+         points (see above), and this layer is suppressed, never restructured.
+         Scoped per class. -->
+
+    <Match>
+        <Class name="net.cumba.swingx.msp.MultiSplitLayout" />
+        <Method name="&lt;init&gt;" />
+        <Bug pattern="MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR" />
+    </Match>
+
+    <Match>
+        <Class name="net.cumba.swingx.msp.MultiSplitLayout$Leaf" />
+        <Method name="&lt;init&gt;" />
+        <Bug pattern="MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR" />
+    </Match>
+
+    <Match>
+        <Class name="net.cumba.swingx.msp.MultiSplitLayout$Split" />
+        <Method name="&lt;init&gt;" />
+        <Bug pattern="MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR" />
+    </Match>
+
+    <Match>
+        <Class name="net.cumba.swingx.msp.MultiSplitPane" />
+        <Method name="&lt;init&gt;" />
+        <Bug pattern="MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR" />
+    </Match>
+
 </FindBugsFilter>
